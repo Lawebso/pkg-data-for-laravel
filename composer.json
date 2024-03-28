@@ -1,5 +1,5 @@
 {
-    "name" : "spatie/laravel-data",
+    "name" : "lawebso/pkg-data-for-laravel",
     "description" : "Create unified resources and data transfer objects",
     "keywords" : [
         "spatie",
