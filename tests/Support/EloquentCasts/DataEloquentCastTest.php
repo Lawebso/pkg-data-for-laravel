@@ -1,7 +1,10 @@
 <?php
 
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
+use Spatie\LaravelData\Tests\Fakes\Models\DummyModelWithEncryptedCasts;
 use function Pest\Laravel\assertDatabaseHas;
 
 use Spatie\LaravelData\Support\DataConfig;
@@ -129,4 +132,36 @@ it('can use an abstract data class with morph map', function () {
     expect($loadedMorphedModel->abstract_data)
         ->toBeInstanceOf(AbstractDataA::class)
         ->a->toBe('A\A');
+});
+
+it('can save an encrypted data object', function () {
+    // Save the encrypted data to the database
+    DummyModelWithEncryptedCasts::create([
+        'data' => new SimpleData('Test'),
+    ]);
+
+    // Retrieve the model from the database without Eloquent casts
+    $model = DB::table('dummy_model_with_casts')
+        ->first();
+
+    try {
+        Crypt::decryptString($model->data);
+        $isEncrypted = true;
+    } catch (DecryptException $e) {
+        $isEncrypted = false;
+    }
+
+    expect($isEncrypted)->toBeTrue();
+});
+
+it('can load an encrypted data object', function () {
+    // Save the encrypted data to the database
+    DummyModelWithEncryptedCasts::create([
+        'data' => new SimpleData('Test'),
+    ]);
+
+    /** @var \Spatie\LaravelData\Tests\Fakes\Models\DummyModelWithCasts $model */
+    $model = DummyModelWithEncryptedCasts::first();
+
+    expect($model->data)->toEqual(new SimpleData('Test'));
 });
